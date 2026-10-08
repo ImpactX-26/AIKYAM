@@ -33,6 +33,24 @@ export const api = {
       if (!res.ok) throw new Error('Login failed');
       return res.json();
     },
+    google: async (data: {
+      credential?: string;
+      email?: string;
+      name?: string;
+      googleId?: string;
+      avatarUrl?: string;
+    }) => {
+      const res = await fetch(`${BASE_URL}/auth/google`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Google authentication failed');
+      }
+      return res.json();
+    },
     register: async (email: string, password?: string, role = 'APPLICANT') => {
       const res = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',

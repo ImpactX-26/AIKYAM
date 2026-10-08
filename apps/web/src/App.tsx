@@ -13,6 +13,7 @@ import { QualificationView } from './features/qualification/QualificationView';
 import { CvStudio } from './features/cv/CvStudio';
 import { ConsultantDashboard } from './features/consultant/ConsultantDashboard';
 import { HealthPage } from './features/health/HealthPage';
+import { LoginPage } from './features/auth/LoginPage';
 import { DemoToolbar } from './components/demo/DemoToolbar';
 
 export function App() {
@@ -29,7 +30,7 @@ export function App() {
         .get()
         .then((prof) => {
           setFullProfile(prof);
-          if (stage === 'LANDING') {
+          if (stage === 'LANDING' || stage === 'LOGIN') {
             setStage('WORKSPACE');
           }
         })
@@ -39,19 +40,24 @@ export function App() {
     }
   }, [token]);
 
-  // Check for direct /health URL
+  // Check for direct /health or /login URL
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window.location.pathname === '/health' || window.location.search.includes('view=health'))) {
-      setStage('HEALTH');
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname === '/health' || window.location.search.includes('view=health')) {
+        setStage('HEALTH');
+      } else if (window.location.pathname === '/login' || window.location.search.includes('view=login')) {
+        setStage('LOGIN');
+      }
     }
   }, [setStage]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black">
-      {stage !== 'LANDING' && <Navbar />}
+      {stage !== 'LANDING' && stage !== 'LOGIN' && <Navbar />}
 
       <main className="flex-1 min-h-0">
         {stage === 'LANDING' && <LandingPage />}
+        {stage === 'LOGIN' && <LoginPage />}
         {stage === 'WORKSPACE' && <JourneyWorkspace />}
         {stage === 'DOCUMENTS' && <DocumentsHub />}
         {stage === 'VIDEO' && <VideoStudio />}

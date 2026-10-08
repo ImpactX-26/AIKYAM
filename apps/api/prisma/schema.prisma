@@ -161,6 +161,8 @@ model User {
   id                  String               @id @default(uuid())
   email               String               @unique
   passwordHash        String?
+  googleId            String?              @unique
+  avatarUrl           String?
   role                UserRole             @default(APPLICANT)
   locale              String               @default("en")
   isGuest             Boolean              @default(false)

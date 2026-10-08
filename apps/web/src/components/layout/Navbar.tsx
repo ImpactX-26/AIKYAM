@@ -17,6 +17,7 @@ import {
   X,
   Cpu,
   Activity,
+  User,
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -191,6 +192,28 @@ export const Navbar: React.FC = () => {
                 {i18n.language}
               </span>
             </button>
+
+            {isGuest ? (
+              <button
+                onClick={() => setStage('LOGIN')}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-300 hover:bg-amber-500/20 transition-all flex items-center gap-1.5 font-medium"
+                title="Sign in with Google or account"
+              >
+                <User className="w-3.5 h-3.5 text-amber-400" />
+                <span>Sign In</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setStage('LOGIN')}
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 font-medium"
+                title="Switch account"
+              >
+                <div className="w-4 h-4 rounded-full bg-amber-500/30 text-amber-300 flex items-center justify-center text-[10px] font-bold">
+                  ✓
+                </div>
+                <span className="hidden sm:inline">Account</span>
+              </button>
+            )}
 
             <button
               onClick={logout}

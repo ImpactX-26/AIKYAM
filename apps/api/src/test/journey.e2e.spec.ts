@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+dotenv.config({ path: '../../.env' });
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient, ApplicantGoal, Provenance } from '@prisma/client';
 import { computeCompleteness } from '../deterministic/completeness';

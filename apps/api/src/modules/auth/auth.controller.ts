@@ -30,6 +30,21 @@ export class AuthController {
     return this.authService.login(body);
   }
 
+  @Post('google')
+  @ApiOperation({ summary: 'Log in or register with Google account' })
+  async google(
+    @Body()
+    body: {
+      credential?: string;
+      email?: string;
+      name?: string;
+      googleId?: string;
+      avatarUrl?: string;
+    },
+  ) {
+    return this.authService.googleLogin(body);
+  }
+
   @Post('guest')
   @ApiOperation({ summary: 'Create an instant guest demo session with applicant profile' })
   async guest(@Body() body: { goal?: ApplicantGoal }) {

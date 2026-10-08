@@ -8,6 +8,7 @@ export type PathwayType = 'STUDY' | 'VOCATIONAL' | 'WORK' | 'UNDECIDED';
 
 export type JourneyStage =
   | 'LANDING'
+  | 'LOGIN'
   | 'WORKSPACE'
   | 'GOAL'
   | 'PROFILE'
