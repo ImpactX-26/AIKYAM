@@ -1,0 +1,106 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const resources = {
+  en: {
+    translation: {
+      app_name: 'Educaro Compass',
+      tagline: 'Your path to Germany, guided.',
+      subtitle:
+        'AI-powered applicant journey for Indian students, trainees, and professionals seeking study, Ausbildung, and careers in Germany.',
+      btn_start: 'Start Your Journey',
+      btn_demo: 'Try Demo Persona',
+      nav_journey: 'Journey Workspace',
+      nav_documents: 'Documents Hub',
+      nav_video: 'Video Studio',
+      nav_review: 'Review & Clarifications',
+      nav_qualification: 'Qualification',
+      nav_cv: 'CV Studio',
+      nav_consultant: 'Consultant Portal',
+      provenance_verified: '✔ Verified',
+      provenance_provided: '👤 You provided',
+      provenance_extracted: '🤖 AI-extracted (Review)',
+      provenance_generated: '✨ AI-generated',
+      pathway_study: 'Higher Education (Study)',
+      pathway_ausbildung: 'Vocational Training (Ausbildung)',
+      pathway_work: 'Skilled Work & Blue Card',
+      completeness: 'Profile Completeness',
+      whats_missing: "What's Missing",
+      why_ask: 'Why am I being asked this?',
+      agent_thinking: 'Agent Reasoning',
+      agent_activity: 'Live Agent Activity',
+      live_profile: 'Live Profile',
+    },
+  },
+  de: {
+    translation: {
+      app_name: 'Educaro Kompass',
+      tagline: 'Ihr Weg nach Deutschland, begleitet.',
+      subtitle:
+        'KI-gestützte Bewerberreise für indische Talente: Studium, Ausbildung und Fachkräftezuwanderung.',
+      btn_start: 'Reise beginnen',
+      btn_demo: 'Demo-Persona testen',
+      nav_journey: 'Bewerber-Workspace',
+      nav_documents: 'Dokumenten-Center',
+      nav_video: 'Video-Studio',
+      nav_review: 'Prüfung & Klärung',
+      nav_qualification: 'Qualifikationsprüfung',
+      nav_cv: 'Lebenslauf-Studio',
+      nav_consultant: 'Berater-Portal',
+      provenance_verified: '✔ Verifiziert',
+      provenance_provided: '👤 Von Ihnen angegeben',
+      provenance_extracted: '🤖 KI-extrahiert (Überprüfung)',
+      provenance_generated: '✨ KI-generiert',
+      pathway_study: 'Hochschulstudium (Bachelor/Master)',
+      pathway_ausbildung: 'Duale Ausbildung',
+      pathway_work: 'Fachkraft & Blaue Karte EU',
+      completeness: 'Profil-Vollständigkeit',
+      whats_missing: 'Noch ausstehend',
+      why_ask: 'Warum wird dies gefragt?',
+      agent_thinking: 'Agenten-Gedankengang',
+      agent_activity: 'Live-Agentenaktivität',
+      live_profile: 'Live-Profil',
+    },
+  },
+  hi: {
+    translation: {
+      app_name: 'एडुकारो कम्पास (Educaro Compass)',
+      tagline: 'जर्मनी की आपकी यात्रा, एआई द्वारा निर्देशित।',
+      subtitle:
+        'भारतीय छात्रों, प्रशिक्षुओं और पेशेवरों के लिए जर्मनी में पढ़ाई, ऑसबिल्डुंग और नौकरी का प्रमाणित मार्ग।',
+      btn_start: 'अपनी यात्रा शुरू करें',
+      btn_demo: 'डेमो प्रोफाइल आज़माएं',
+      nav_journey: 'सफ़र का डैशबोर्ड',
+      nav_documents: 'दस्तावेज़ केंद्र',
+      nav_video: 'वीडियो स्टूडियो',
+      nav_review: 'सत्यापन व स्पष्टीकरण',
+      nav_qualification: 'पात्रता परिणाम',
+      nav_cv: 'सीवी स्टूडियो',
+      nav_consultant: 'परामर्शदाता पोर्टल',
+      provenance_verified: '✔ सत्यापित (Verified)',
+      provenance_provided: '👤 आपके द्वारा दर्ज',
+      provenance_extracted: '🤖 एआई द्वारा पढ़ा गया',
+      provenance_generated: '✨ एआई द्वारा निर्मित',
+      pathway_study: 'उच्च शिक्षा (Study)',
+      pathway_ausbildung: 'व्यावसायिक प्रशिक्षण (Ausbildung)',
+      pathway_work: 'कुशल रोजगार (Skilled Work)',
+      completeness: 'प्रोफ़ाइल पूर्णता',
+      whats_missing: 'शेष आवश्यकताएं',
+      why_ask: 'यह जानकारी क्यों मांगी जा रही है?',
+      agent_thinking: 'एजेंट की सोच',
+      agent_activity: 'लाइव एजेंट गतिविधि',
+      live_profile: 'लाइव प्रोफ़ाइल',
+    },
+  },
+};
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+export default i18n;

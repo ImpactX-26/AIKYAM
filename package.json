@@ -1,0 +1,29 @@
+{
+  "name": "educaro-compass",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Educaro Compass - AI-Powered Applicant Journey for Germany",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "db:check": "npm run db:check --workspace=apps/api",
+    "db:migrate": "npm run db:migrate --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api",
+    "db:verify": "npm run db:verify --workspace=apps/api",
+    "db:reset": "npm run db:reset --workspace=apps/api",
+    "db:studio": "npm run db:studio --workspace=apps/api",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "dev": "concurrently -n \"API,WEB\" -c \"cyan,magenta\" \"npm run dev:api\" \"npm run dev:web\"",
+    "test:api": "npm run test --workspace=apps/api",
+    "test:web": "npm run test --workspace=apps/web",
+    "test": "npm run test:api && npm run test:web",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "build": "npm run build:api && npm run build:web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

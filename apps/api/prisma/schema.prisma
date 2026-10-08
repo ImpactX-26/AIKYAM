@@ -1,0 +1,591 @@
+// ==============================================================================
+// Educaro Compass - Database Schema (Prisma ORM)
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum UserRole {
+  APPLICANT
+  CONSULTANT
+}
+
+enum ApplicantGoal {
+  STUDY
+  VOCATIONAL
+  WORK
+  UNDECIDED
+}
+
+enum SkillCategory {
+  TECHNICAL
+  PROFESSIONAL
+  CERTIFICATION
+}
+
+enum LanguageSource {
+  CERTIFICATE
+  SELF_DECLARED
+  VIDEO_ASSESSED
+}
+
+enum DocumentType {
+  DEGREE
+  TRANSCRIPT
+  CERTIFICATE
+  EXPERIENCE_LETTER
+  LANGUAGE_CERT
+  CV
+  PASSPORT
+  OTHER
+}
+
+enum DocumentProcessingStatus {
+  QUEUED
+  OCR
+  EXTRACTING
+  NEEDS_REVIEW
+  DONE
+  FAILED
+}
+
+enum ExtractionStatus {
+  PENDING_REVIEW
+  CONFIRMED
+  REJECTED
+  EDITED
+}
+
+enum MediaType {
+  INTRO_VIDEO
+}
+
+enum Provenance {
+  VERIFIED
+  APPLICANT_PROVIDED
+  AI_EXTRACTED
+  AI_GENERATED
+}
+
+enum EvidenceType {
+  DOCUMENT
+  VIDEO
+  CHAT
+  MANUAL
+}
+
+enum ClarificationType {
+  MISSING
+  INCOMPLETE
+  INCONSISTENT
+}
+
+enum ClarificationSeverity {
+  INFO
+  WARN
+  BLOCKER
+}
+
+enum ClarificationStatus {
+  OPEN
+  ANSWERED
+  DISMISSED
+}
+
+enum ClarificationRaisedBy {
+  RULE
+  AGENT
+}
+
+enum Pathway {
+  STUDY
+  VOCATIONAL
+  WORK
+}
+
+enum QualificationStatus {
+  ELIGIBLE
+  CONDITIONALLY_ELIGIBLE
+  NOT_YET_ELIGIBLE
+  NEEDS_REVIEW
+}
+
+enum CtaType {
+  SERVICE
+  CONSULTANT
+  ACTION
+}
+
+enum RecommendationType {
+  SERVICE
+  CONSULTANT_REFERRAL
+  APPLICANT_ACTION
+}
+
+enum CvLanguage {
+  EN
+  DE
+}
+
+enum MessageRole {
+  USER
+  AGENT
+  SYSTEM
+}
+
+enum AgentStepKind {
+  THOUGHT_SUMMARY
+  TOOL_CALL
+  TOOL_RESULT
+  DECISION
+  ERROR
+}
+
+// ------------------------------------------------------------------------------
+// MODELS
+// ------------------------------------------------------------------------------
+
+// 1. User Account
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String?
+  role                UserRole             @default(APPLICANT)
+  locale              String               @default("en")
+  isGuest             Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  applicant           Applicant?
+  consultantReferrals ConsultantReferral[] @relation("ConsultantReferrals")
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// 2. Applicant Record
+model Applicant {
+  id                   String                 @id @default(uuid())
+  userId               String                 @unique
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal                 ApplicantGoal          @default(UNDECIDED)
+  currentStage         String                 @default("GOAL_DISCOVERY")
+  completenessScore    Int                    @default(0)
+  consentGivenAt       DateTime?
+  consentVersion       String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  personal             ProfilePersonal?
+  educations           Education[]
+  employments          Employment[]
+  skills               Skill[]
+  languages            LanguageProficiency[]
+  documents            Document[]
+  motivation           Motivation?
+  media                Media[]
+  profileFacts         ProfileFact[]
+  clarificationTasks   ClarificationTask[]
+  qualificationResults QualificationResult[]
+  recommendations      Recommendation[]
+  cvDocuments          CvDocument[]
+  consultantReferrals  ConsultantReferral[]   @relation("ApplicantReferrals")
+  conversations        Conversation[]
+  agentRuns            AgentRun[]
+
+  @@index([goal])
+  @@index([currentStage])
+}
+
+// 3. Profile Personal Details
+model ProfilePersonal {
+  id                String    @id @default(uuid())
+  applicantId       String    @unique
+  applicant         Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  name              String?
+  dob               DateTime?
+  nationality       String    @default("Indian")
+  email             String?
+  phone             String?
+  cityIndia         String?
+  targetCityGermany String?
+  availabilityDate  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// 4. Education Entry
+model Education {
+  id           String    @id @default(uuid())
+  applicantId  String
+  applicant    Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  institution  String
+  degree       String
+  fieldOfStudy String
+  startDate    DateTime
+  endDate      DateTime?
+  grade        String?
+  gradeScale   String?
+  country      String    @default("India")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([applicantId])
+}
+
+// 5. Employment Entry
+model Employment {
+  id               String    @id @default(uuid())
+  applicantId      String
+  applicant        Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  employer         String
+  role             String
+  responsibilities String?   @db.Text
+  startDate        DateTime
+  endDate          DateTime?
+  isCurrent        Boolean   @default(false)
+  country          String    @default("India")
+  industry         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([applicantId])
+}
+
+// 6. Skill
+model Skill {
+  id          String        @id @default(uuid())
+  applicantId String
+  applicant   Applicant     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  name        String
+  category    SkillCategory @default(TECHNICAL)
+  level       String?
+  issuer      String?
+  issuedAt    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([applicantId])
+}
+
+// 7. Language Proficiency
+model LanguageProficiency {
+  id              String         @id @default(uuid())
+  applicantId     String
+  applicant       Applicant      @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  language        String
+  cefrLevel       String         // A1, A2, B1, B2, C1, C2
+  source          LanguageSource @default(SELF_DECLARED)
+  certificateName String?
+  testDate        DateTime?
+  expiryDate      DateTime?
+  scoreRaw        String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([applicantId])
+}
+
+// 8. Document Record
+model Document {
+  id                   String                   @id @default(uuid())
+  applicantId          String
+  applicant            Applicant                @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  type                 DocumentType             @default(OTHER)
+  fileName             String
+  mimeType             String
+  storageKey           String
+  pages                Int                      @default(1)
+  processingStatus     DocumentProcessingStatus @default(QUEUED)
+  ocrText              String?                  @db.Text
+  classifiedConfidence Float?
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+
+  extractions          DocumentExtraction[]
+
+  @@index([applicantId])
+  @@index([type])
+  @@index([processingStatus])
+}
+
+// 9. Document Extraction Field
+model DocumentExtraction {
+  id          String           @id @default(uuid())
+  documentId  String
+  document    Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  fieldPath   String
+  value       Json
+  confidence  Float
+  pageNumber  Int              @default(1)
+  bbox        Json?
+  status      ExtractionStatus @default(PENDING_REVIEW)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([documentId])
+  @@index([status])
+}
+
+// 10. Motivation & Goals
+model Motivation {
+  id               String    @id @default(uuid())
+  applicantId      String    @unique
+  applicant        Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  reasonForGermany String?   @db.Text
+  preferredPathway String?
+  longTermGoals    String?   @db.Text
+  targetField      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 11. Media (Intro Video & STT)
+model Media {
+  id                 String    @id @default(uuid())
+  applicantId        String
+  applicant          Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  type               MediaType @default(INTRO_VIDEO)
+  storageKey         String
+  durationSec        Float?
+  transcript         String?   @db.Text
+  transcriptSegments Json?     // [{start: number, end: number, text: string}]
+  extractedInsights  Json?     // {background, motivation, goals, languagesHeard}
+  status             String    @default("PROCESSED")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([applicantId])
+}
+
+// 12. Generic Profile Fact with Provenance Trail
+model ProfileFact {
+  id           String       @id @default(uuid())
+  applicantId  String
+  applicant    Applicant    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  fieldPath    String       // e.g. "education[0].degree", "personal.name", "languages[0].cefrLevel"
+  value        Json
+  provenance   Provenance   @default(APPLICANT_PROVIDED)
+  confidence   Float        @default(1.0)
+  evidenceType EvidenceType @default(MANUAL)
+  evidenceRef  Json?        // {documentId, page, bbox, mediaId, timestamp, messageId}
+  confirmedAt  DateTime?
+  confirmedBy  String?
+  version      Int          @default(1)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([applicantId, fieldPath, version])
+  @@index([applicantId, fieldPath])
+  @@index([provenance])
+}
+
+// 13. Clarification Task (Missing, Incomplete, Inconsistent)
+model ClarificationTask {
+  id              String                @id @default(uuid())
+  applicantId     String
+  applicant       Applicant             @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  type            ClarificationType
+  severity        ClarificationSeverity @default(WARN)
+  fieldPaths      Json                  // string[] of field paths involved
+  message         String                @db.Text
+  suggestedAction String?               @db.Text
+  status          ClarificationStatus   @default(OPEN)
+  raisedBy        ClarificationRaisedBy @default(RULE)
+  resolution      Json?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([applicantId])
+  @@index([status])
+  @@index([severity])
+}
+
+// 14. Qualification Rule Set (Editable Pathway Rules Config)
+model QualificationRuleSet {
+  id        String                @id @default(uuid())
+  pathway   Pathway
+  version   String
+  rulesJson Json                  // JSON rule hierarchy (thresholds, conditions, weights)
+  isActive  Boolean               @default(true)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  results   QualificationResult[]
+
+  @@index([pathway, isActive])
+}
+
+// 15. Qualification Result
+model QualificationResult {
+  id                  String               @id @default(uuid())
+  applicantId         String
+  applicant           Applicant            @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  ruleSetId           String
+  ruleSet             QualificationRuleSet @relation(fields: [ruleSetId], references: [id])
+  pathway             Pathway
+  status              QualificationStatus  @default(NEEDS_REVIEW)
+  score               Int                  @default(0)
+  breakdown           Json                 // [{ruleId, label, passed, weight, evidenceFactIds}]
+  missingRequirements Json                 // [{ruleId, description, estimatedEffort, recommendationCode}]
+  explanation         String?              @db.Text // AI_GENERATED summary
+  computedAt          DateTime             @default(now())
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([applicantId])
+  @@index([status])
+}
+
+// 16. Educaro Service Catalogue
+model EducaroService {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  description   String   @db.Text
+  pathway       String   // STUDY, VOCATIONAL, WORK, ALL
+  prerequisites Json?
+  ctaType       CtaType  @default(SERVICE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([code])
+}
+
+// 17. Recommendation
+model Recommendation {
+  id          String             @id @default(uuid())
+  applicantId String
+  applicant   Applicant          @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  serviceCode String?
+  type        RecommendationType @default(SERVICE)
+  title       String
+  reasoning   String             @db.Text
+  priority    Int                @default(1)
+  nextActions Json?
+  status      String             @default("ACTIVE")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([applicantId])
+}
+
+// 18. CV Document
+model CvDocument {
+  id            String     @id @default(uuid())
+  applicantId   String
+  applicant     Applicant  @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  templateId    String     @default("modern_german")
+  language      CvLanguage @default(EN)
+  contentJson   Json       // structured CV sections with per-field provenance
+  pdfStorageKey String?
+  version       Int        @default(1)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([applicantId])
+}
+
+// 19. Consultant Referral (Handoff)
+model ConsultantReferral {
+  id              String    @id @default(uuid())
+  applicantId     String
+  applicant       Applicant @relation("ApplicantReferrals", fields: [applicantId], references: [id], onDelete: Cascade)
+  consultantId    String?
+  consultant      User?     @relation("ConsultantReferrals", fields: [consultantId], references: [id], onDelete: SetNull)
+  slotRequestedAt DateTime?
+  status          String    @default("PENDING") // PENDING, SCHEDULED, COMPLETED, CANCELLED
+  handoffSummary  String?   @db.Text
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([applicantId])
+  @@index([consultantId])
+}
+
+// 20. Conversation & Messages
+model Conversation {
+  id          String    @id @default(uuid())
+  applicantId String
+  applicant   Applicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  messages    Message[]
+
+  @@index([applicantId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole  @default(USER)
+  content        String       @db.Text
+  uiHints        Json?        // quickReplies, cards, inputDirectives
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+// 21. Agent Run & Execution Trace (Replay & Debugging)
+model AgentRun {
+  id          String      @id @default(uuid())
+  applicantId String
+  applicant   Applicant   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  trigger     String
+  status      String      @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  startedAt   DateTime    @default(now())
+  finishedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  steps       AgentStep[]
+
+  @@index([applicantId])
+}
+
+model AgentStep {
+  id           String        @id @default(uuid())
+  runId        String
+  run          AgentRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  agentName    String
+  kind         AgentStepKind @default(THOUGHT_SUMMARY)
+  toolName     String?
+  input        Json?
+  output       Json?
+  latencyMs    Int?
+  tokenUsage   Json?
+  createdAt    DateTime      @default(now())
+
+  @@index([runId])
+}
+
+// 22. Audit Log (Responsible AI & Compliance Trail)
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  diff      Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId])
+}
