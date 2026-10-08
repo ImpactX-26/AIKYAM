@@ -6,6 +6,8 @@ node_modules/
 # Build Outputs
 dist/
 build/
+.vite/
+apps/web/.vite/
 *.tsbuildinfo
 
 # Environment variables & secrets
